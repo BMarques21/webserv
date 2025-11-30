@@ -45,7 +45,7 @@ A continuation of the C++ learning path, these modules explore more advanced top
 
 ---
 
-### 💬 ft_irc – In Progress 🔧
+### 💬 ft_irc (with @joao-alm)– In Progress 🔧
 
 A fully functional IRC server built from scratch, implementing the RFC 1459 protocol.
 
