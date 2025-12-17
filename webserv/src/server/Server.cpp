@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -132,7 +133,13 @@ void Server::_setupSocket() {
 	// Bind to port
 	struct sockaddr_in address;
 	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
+
+	// Convert host string to network address
+	if (inet_pton(AF_INET, config.host.c_str(), &address.sin_addr) <= 0) {
+		// Fallback to INADDR_ANY if host is invalid
+		address.sin_addr.s_addr = INADDR_ANY;
+	}
+
 	address.sin_port = htons(config.port);
 
 	if (bind(_server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {

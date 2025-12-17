@@ -52,6 +52,8 @@ public:
 private:
 	void _parseServerBlock(const std::string& block, ServerConfig& config);
 	void _parseLocationBlock(const std::string& block, LocationConfig& location);
+	void _parseConfigFile(const std::string& path);
+	size_t _findClosingBrace(const std::string& str, size_t start) const;
 	std::string _trim(const std::string& str) const;
 	std::vector<std::string> _split(const std::string& str, char delimiter) const;
 };
