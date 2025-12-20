@@ -11,7 +11,9 @@
 
 CgiHandler::CgiHandler(const std::string& cgi_path, const std::string& script_path,
                        const Request& request, const LocationConfig* location)
-	: _cgi_path(cgi_path), _script_path(script_path), _request(request), _location(location) {}
+	: _cgi_path(cgi_path), _script_path(script_path), _request(request) {
+	(void)location; // Suppress unused parameter warning
+}
 
 CgiHandler::~CgiHandler() {}
 

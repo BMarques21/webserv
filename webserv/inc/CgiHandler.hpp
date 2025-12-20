@@ -13,7 +13,6 @@ private:
 	std::string _cgi_path;
 	std::string _script_path;
 	const Request& _request;
-	const LocationConfig* _location;
 
 public:
 	CgiHandler(const std::string& cgi_path, const std::string& script_path,
