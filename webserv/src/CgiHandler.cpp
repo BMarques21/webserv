@@ -1,6 +1,6 @@
 #include "CgiHandler.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 #include "Config.hpp"
 
 #include <unistd.h>

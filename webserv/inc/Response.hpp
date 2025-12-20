@@ -34,5 +34,5 @@ private:
 	std::string _getDefaultStatusMessage(int code) const;
 };
 
-#endif // HTTPRESPONSE_HPP
+#endif // RESPONSE_HPP
 

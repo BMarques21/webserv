@@ -7,15 +7,10 @@ The configuration file parsing has been fully implemented in `src/server/Config.
 
 ### Server-Level Directives
 - ✅ `listen <port>` - Set the listening port
-- ✅ `host <address>` - Set the host address (e.g., 0.0.0.0 for all interfaces, 127.0.0.1 for localhost only)
+- ✅ `host <address>` - Set the host address (e.g., 0.0.0.0, 127.0.0.1)
 - ✅ `server_name <name>` - Set the server name
 - ✅ `max_body_size <bytes>` - Set maximum request body size
 - ✅ `error_page <code> <path>` - Set custom error pages
-
-**Note**: The `host` directive controls which network interface the server binds to:
-- `0.0.0.0` - Binds to all available interfaces (accessible from any IP)
-- `127.0.0.1` - Binds only to localhost (accessible only from the same machine)
-- Specific IP - Binds to a specific network interface
 
 ### Location-Level Directives
 - ✅ `root <path>` - Set the root directory for serving files

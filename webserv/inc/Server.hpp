@@ -14,15 +14,6 @@ class Config;
 class Request;
 class Response;
 
-/**
- * @class Server
- * @brief Main HTTP server class handling connections and requests
- *
- * This class implements a non-blocking HTTP/1.1 server using poll()
- * for efficient I/O multiplexing. It manages multiple client connections,
- * processes HTTP requests, and serves responses according to the
- * configuration file.
- */
 class Server {
 private:
 	Config* _config;
@@ -32,31 +23,10 @@ private:
 	std::map<int, std::string> _output_buffers; // Output buffers per client fd
 
 public:
-	/**
-	 * @brief Construct a new Server object
-	 * @param config_file Path to the configuration file
-	 * @throws std::runtime_error if configuration parsing fails
-	 */
 	Server(const std::string& config_file);
-
-	/**
-	 * @brief Destroy the Server object and cleanup resources
-	 */
 	~Server();
 
-	/**
-	 * @brief Main event loop - runs until interrupted
-	 *
-	 * Handles all I/O events using poll(), processes client requests,
-	 * and manages client connections.
-	 */
-	void run();
-
-	/**
-	 * @brief Check if shutdown signal was received
-	 * @return true if server should shutdown
-	 */
-	static bool shouldShutdown();
+	void run(); // Main event loop
 
 private:
 	// Socket setup

@@ -1,8 +1,8 @@
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Config.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 #include "CgiHandler.hpp"
 
 #include <iostream>
@@ -16,15 +16,7 @@
 #include <sstream>
 #include <cstring>
 #include <cerrno>
-#include <csignal>
 #include <dirent.h>
-
-// External shutdown flag from main.cpp
-extern volatile sig_atomic_t g_shutdown;
-
-// Constants
-static const int POLL_TIMEOUT_MS = 1000;  // 1 second
-static const time_t CLIENT_TIMEOUT_SEC = 60;  // 60 seconds
 
 Server::Server(const std::string& config_file) : _config(NULL), _server_fd(-1) {
 	_config = new Config(config_file);
@@ -49,24 +41,16 @@ Server::~Server() {
 	delete _config;
 }
 
-bool Server::shouldShutdown() {
-	return g_shutdown != 0;
-}
-
 void Server::run() {
 	const ServerConfig& server_config = _config->getServerConfig(0);
 	std::cout << "Server running on " << server_config.host << ":" << server_config.port << std::endl;
 	std::cout << "Waiting for connections..." << std::endl;
 
-	while (!shouldShutdown()) {
-		int poll_count = poll(_poll_fds.data(), _poll_fds.size(), POLL_TIMEOUT_MS);
+	while (true) {
+		int poll_count = poll(_poll_fds.data(), _poll_fds.size(), 1000); // 1 second timeout
 
 		if (poll_count < 0) {
-			if (errno == EINTR) {
-				// Interrupted by signal, check if we should shutdown
-				if (shouldShutdown()) break;
-				continue;
-			}
+			if (errno == EINTR) continue;
 			throw std::runtime_error("Poll failed");
 		}
 
@@ -124,13 +108,11 @@ void Server::run() {
 			i++;
 		}
 	}
-
-	std::cout << "Server shutting down..." << std::endl;
 }
 
-// ============================================================================
-// Socket Setup
-// ============================================================================
+//
+/* Socket setup */
+//
 
 void Server::_setupSocket() {
 	const ServerConfig& config = _config->getServerConfig(0);
@@ -246,16 +228,16 @@ void Server::_processClientRequest(int client_fd) {
 	Client* client = _clients[client_fd];
 	const std::string& buffer = client->getBuffer();
 
-	// First pass: Parse headers if not already done
+	// Check if headers are complete
 	if (!client->areHeadersParsed()) {
 		size_t header_end = buffer.find("\r\n\r\n");
 		if (header_end == std::string::npos) {
-			// Headers not complete yet, wait for more data
+			// Headers not complete yet
 			return;
 		}
 		client->setHeadersParsed(true);
 
-		// Extract Content-Length from headers if present
+		// Parse headers to get Content-Length
 		Request temp_request;
 		if (temp_request.parse(buffer.substr(0, header_end + 4))) {
 			std::string content_length_str = temp_request.getHeader("Content-Length");
@@ -267,25 +249,24 @@ void Server::_processClientRequest(int client_fd) {
 		}
 	}
 
-	// Second pass: Check if complete request (headers + body) is received
+	// Check if we have the complete request (including body if present)
 	size_t header_end = buffer.find("\r\n\r\n");
 	if (header_end != std::string::npos) {
 		size_t body_start = header_end + 4;
 		size_t body_received = buffer.length() - body_start;
 		client->setBodyReceived(body_received);
 
-		// Request is complete when we have all the body (or no body expected)
+		// Check if body is complete
 		if (client->getContentLength() == 0 || body_received >= client->getContentLength()) {
 			client->setRequestComplete(true);
 		}
 	}
 
-	// If request is not yet complete, wait for more data
 	if (!client->isRequestComplete()) {
 		return;
 	}
 
-	// Parse and handle the complete request
+	// Parse and handle the request
 	Request request;
 	if (!request.parse(buffer)) {
 		Response response(400);
@@ -311,15 +292,14 @@ Response Server::_buildResponse(const Request& request) {
 	const ServerConfig& server_config = _config->getServerConfig(0);
 	const LocationConfig* location = _config->findLocation(request.getUri(), server_config);
 
-	// Location not found
 	if (!location) {
 		Response response(404);
-		response.setBody("<html><body><h1>404 Not Found</h1><p>The requested resource was not found on this server.</p></body></html>");
+		response.setBody("<html><body><h1>404 Not Found</h1></body></html>");
 		response.setHeader("Content-Type", "text/html");
 		return response;
 	}
 
-	// Check if HTTP method is allowed for this location
+	// Check if method is allowed
 	bool method_allowed = false;
 	for (size_t i = 0; i < location->methods.size(); ++i) {
 		if (location->methods[i] == request.getMethod()) {
@@ -330,70 +310,60 @@ Response Server::_buildResponse(const Request& request) {
 
 	if (!method_allowed) {
 		Response response(405);
-		response.setBody("<html><body><h1>405 Method Not Allowed</h1><p>The method is not allowed for this resource.</p></body></html>");
+		response.setBody("<html><body><h1>405 Method Not Allowed</h1></body></html>");
 		response.setHeader("Content-Type", "text/html");
-		response.setHeader("Allow", "GET, POST");  // TODO: Build from location->methods
 		return response;
 	}
 
-	// Handle GET requests
+	// Handle different methods
 	if (request.getMethod() == "GET") {
 		std::string file_path = location->root + request.getUri();
 
 		// Check if path is a directory
 		struct stat path_stat;
-		if (stat(file_path.c_str(), &path_stat) == 0 && S_ISDIR(path_stat.st_mode)) {
-			// Ensure trailing slash for directories
-			std::string index_path = file_path;
-			if (index_path[index_path.length() - 1] != '/') {
-				index_path += "/";
-			}
-			index_path += location->index;
+		if (stat(file_path.c_str(), &path_stat) == 0) {
+			if (S_ISDIR(path_stat.st_mode)) {
+				// Try index file
+				std::string index_path = file_path;
+				if (index_path[index_path.length() - 1] != '/') {
+					index_path += "/";
+				}
+				index_path += location->index;
 
-			// Try to serve index file
-			if (_fileExists(index_path)) {
-				file_path = index_path;
-			} else if (location->autoindex) {
-				// Directory listing
-				Response response(200);
-				response.setBody("<html><body><h1>Directory listing</h1><p>Feature not yet implemented</p></body></html>");
-				response.setHeader("Content-Type", "text/html");
-				return response;
-			} else {
-				// No index file and autoindex disabled
-				Response response(403);
-				response.setBody("<html><body><h1>403 Forbidden</h1><p>Directory listing is disabled.</p></body></html>");
-				response.setHeader("Content-Type", "text/html");
-				return response;
+				if (_fileExists(index_path)) {
+					file_path = index_path;
+				} else if (location->autoindex) {
+					// TODO: Implement directory listing
+					Response response(200);
+					response.setBody("<html><body><h1>Directory listing not yet implemented</h1></body></html>");
+					response.setHeader("Content-Type", "text/html");
+					return response;
+				} else {
+					Response response(403);
+					response.setBody("<html><body><h1>403 Forbidden</h1></body></html>");
+					response.setHeader("Content-Type", "text/html");
+					return response;
+				}
 			}
 		}
 
-		// Serve the file if it exists
 		if (_fileExists(file_path)) {
 			std::string content = _readFile(file_path);
-			if (content.empty()) {
-				// File read error
-				Response response(500);
-				response.setBody("<html><body><h1>500 Internal Server Error</h1><p>Error reading file.</p></body></html>");
-				response.setHeader("Content-Type", "text/html");
-				return response;
-			}
 			Response response(200);
 			response.setBody(content);
 			response.setHeader("Content-Type", _getContentType(file_path));
 			return response;
 		} else {
-			// File not found
 			Response response(404);
-			response.setBody("<html><body><h1>404 Not Found</h1><p>The requested file was not found.</p></body></html>");
+			response.setBody("<html><body><h1>404 Not Found</h1></body></html>");
 			response.setHeader("Content-Type", "text/html");
 			return response;
 		}
 	}
 
-	// Method not implemented yet
+	// Default response
 	Response response(501);
-	response.setBody("<html><body><h1>501 Not Implemented</h1><p>This method is not yet implemented.</p></body></html>");
+	response.setBody("<html><body><h1>501 Not Implemented</h1></body></html>");
 	response.setHeader("Content-Type", "text/html");
 	return response;
 }
@@ -421,22 +391,14 @@ void Server::_flushClientBuffer(int client_fd) {
 	}
 
 	ssize_t sent = send(client_fd, buffer.c_str(), buffer.length(), 0);
-
 	if (sent > 0) {
-		// Successfully sent some data, remove it from buffer
 		buffer.erase(0, static_cast<size_t>(sent));
-	} else if (sent == -1) {
-		// Check if it's a temporary error (buffer full)
-		if (errno != EAGAIN && errno != EWOULDBLOCK) {
-			// Real error occurred, log it
-			std::cerr << "Error sending to client fd=" << client_fd
-			          << ": " << strerror(errno) << std::endl;
-			return;
-		}
-		// EAGAIN/EWOULDBLOCK means we should try again later
+	} else if (sent == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
+		// Real error
+		return;
 	}
 
-	// If buffer is now empty, remove POLLOUT from events
+	// If buffer is empty, remove POLLOUT from events
 	if (buffer.empty()) {
 		for (size_t i = 0; i < _poll_fds.size(); i++) {
 			if (_poll_fds[i].fd == client_fd) {
@@ -472,17 +434,14 @@ void Server::_removeClient(int client_fd) {
 	close(client_fd);
 }
 
-// ============================================================================
-// Client Management - Cleanup
-// ============================================================================
-
 void Server::_cleanupTimedOutClients() {
+	const time_t timeout = 60; // 60 seconds timeout
 	time_t now = time(NULL);
 
 	std::vector<int> clients_to_remove;
 
 	for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-		if (now - it->second->getLastActivity() > CLIENT_TIMEOUT_SEC) {
+		if (now - it->second->getLastActivity() > timeout) {
 			clients_to_remove.push_back(it->first);
 		}
 	}
@@ -493,25 +452,18 @@ void Server::_cleanupTimedOutClients() {
 	}
 }
 
-// ============================================================================
-// Helper Methods
-// ============================================================================
+//
+/* Helper methods */
+//
 
 std::string Server::_readFile(const std::string& path) {
 	std::ifstream file(path.c_str(), std::ios::binary);
 	if (!file.is_open()) {
-		std::cerr << "Failed to open file: " << path << std::endl;
 		return "";
 	}
 
 	std::ostringstream contents;
 	contents << file.rdbuf();
-
-	if (file.fail() && !file.eof()) {
-		std::cerr << "Error reading file: " << path << std::endl;
-		return "";
-	}
-
 	return contents.str();
 }
 
