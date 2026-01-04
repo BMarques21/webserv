@@ -4,6 +4,7 @@
 
 #include "MutantStack.hpp"
 #include <iostream>
+#include <string>
 #include <list>
 
 int main(void) {
