@@ -22,7 +22,6 @@ int main(int, char**)
 		mirror[i] = value;
 	}
 
-	// SCOPE
 	{
 		Array<int> tmp = numbers;
 		Array<int> test(tmp);

@@ -8,9 +8,6 @@
 #include <iostream>
 #include <string>
 
-// Exercise 00: Start with a few functions
-// Function templates: swap, min, max
-
 template <typename T>
 void swap(T &a, T &b) {
     T tmp = a;

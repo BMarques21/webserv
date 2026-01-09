@@ -8,16 +8,12 @@
 #include <iostream>
 #include <string>
 
-// Exercise 01: Iter
-// Function template that applies a function to every element of an array
-
 template <typename T>
 void iter(T *array, const int length, void (*func)(T &)) {
     for (int i = 0; i < length; i++)
         func(array[i]);
 }
 
-// Overload for const function pointers
 template <typename T>
 void iter(T *array, const int length, void (*func)(const T &)) {
     for (int i = 0; i < length; i++)

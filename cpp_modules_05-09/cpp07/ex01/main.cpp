@@ -4,7 +4,6 @@
 
 #include "iter.hpp"
 
-// Test functions
 template <typename T>
 void printElement(T &element)
 {
@@ -25,8 +24,7 @@ void toUppercase(char &c)
 
 int main(void)
 {
-    // Test with int array
-    std::cout << "=== Testing with int array ===" << std::endl;
+    std::cout << "Testing with int array..." << std::endl;
     int intArray[] = {1, 2, 3, 4, 5};
     int intLength = 5;
 
@@ -39,8 +37,7 @@ int main(void)
     iter(intArray, intLength, printElement<int>);
     std::cout << std::endl << std::endl;
 
-    // Test with double array
-    std::cout << "=== Testing with double array ===" << std::endl;
+    std::cout <<"Testing with double array..." << std::endl;
     double doubleArray[] = {1.1, 2.2, 3.3, 4.4, 5.5};
     int doubleLength = 5;
 
@@ -53,8 +50,7 @@ int main(void)
     iter(doubleArray, doubleLength, printElement<double>);
     std::cout << std::endl << std::endl;
 
-    // Test with char array
-    std::cout << "=== Testing with char array ===" << std::endl;
+    std::cout << "Testing with char array..." << std::endl;
     char charArray[] = {'h', 'e', 'l', 'l', 'o'};
     int charLength = 5;
 
@@ -68,7 +64,7 @@ int main(void)
     std::cout << std::endl << std::endl;
 
     // Test with string array
-    std::cout << "=== Testing with string array ===" << std::endl;
+    std::cout << "Testing with string array..." << std::endl;
     std::string stringArray[] = {"Hello", "World", "42"};
     int stringLength = 3;
 

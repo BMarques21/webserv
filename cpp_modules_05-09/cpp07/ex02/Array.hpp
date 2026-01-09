@@ -7,13 +7,6 @@
 
 #include <stdexcept>
 
-// Exercise 02: Array
-// Template class for an array that:
-// - Can be constructed with a size parameter
-// - Has copy constructor and assignment operator
-// - Has subscript operator with bounds checking
-// - Has size() member function
-
 template <typename T>
 class Array
 {
@@ -22,29 +15,23 @@ private:
     unsigned int _size;
 
 public:
-    // Default constructor: creates an empty array
-    Array() : _data(NULL), _size(0)
-    {
-    }
+    Array() : _data(NULL), _size(0) { }
 
     // Constructor with size parameter: creates array with n elements
     // Elements are initialized by default (value-initialized)
-    Array(unsigned int n) : _size(n)
-    {
+    Array(unsigned int n) : _size(n) {
         _data = new T[n]();
     }
 
     // Copy constructor: deep copy
-    Array(const Array &other) : _size(other._size)
-    {
+    Array(const Array &other) : _size(other._size) {
         _data = new T[_size];
         for (unsigned int i = 0; i < _size; i++)
             _data[i] = other._data[i];
     }
 
     // Assignment operator: deep copy
-    Array &operator=(const Array &other)
-    {
+    Array &operator=(const Array &other) {
         if (this != &other)
         {
             delete[] _data;
@@ -57,31 +44,27 @@ public:
     }
 
     // Destructor
-    ~Array()
-    {
+    ~Array() {
         delete[] _data;
     }
 
     // Subscript operator - non-const version
     // Throws std::out_of_range exception if index is out of bounds
-    T &operator[](unsigned int index)
-    {
+    T &operator[](unsigned int index) {
         if (index >= _size)
             throw std::out_of_range("Index out of bounds");
         return _data[index];
     }
 
     // Subscript operator - const version
-    const T &operator[](unsigned int index) const
-    {
+    const T &operator[](unsigned int index) const {
         if (index >= _size)
             throw std::out_of_range("Index out of bounds");
         return _data[index];
     }
 
     // Size member function: returns the number of elements
-    unsigned int size(void) const
-    {
+    unsigned int size(void) const {
         return _size;
     }
 };
