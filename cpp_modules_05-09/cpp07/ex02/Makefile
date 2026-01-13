@@ -8,13 +8,11 @@ SRCS		= main.cpp
 OBJ			= $(SRCS:.cpp=.o)
 
 GREEN = \033[1;32m
-BLUE = \033[1;34m
-BLUELIGHT = \033[0;34m
+YELLOW = \033[1;33m
+YELLOWLIGHT = \033[0;33m
 RED = \033[1;31m
-REDLIGHT = \033[0;31m
+BLUE = \033[1;34m
 RESET = \033[0m
-
-COMPILED_ONCE = $(shell test -f .compiled && echo "true" || echo "false")
 
 all: $(NAME)
 
@@ -23,16 +21,13 @@ $(NAME): $(OBJ)
 	@$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME)
 
 %.o: %.cpp
-	@if [ ! -f .compiled ]; then \
-	 echo "$(BLUE)[C++] Compiling C++ files...$(RESET)"; \
-	 touch .compiled; \
-	fi
-	@echo "$(BLUELIGHT)Compiling $<...$(RESET)"
+	@echo "$(YELLOW)[C++] Compiling C++ files...$(RESET)"
+	@echo "$(YELLOWLIGHT)Compiling $<...$(RESET)"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJ) .compiled
-	@echo "$(REDLIGHT)[C++] Object files removed$(RESET)"
+	@rm -f $(OBJ)
+	@echo "$(BLUE)[C++] Object files removed$(RESET)"
 
 fclean: clean
 	@rm -f $(NAME)

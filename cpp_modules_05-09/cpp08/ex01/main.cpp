@@ -1,5 +1,5 @@
 //
-// Created by viceda-s on 04/01/2026.
+// Created by viceda-s on 13/01/2026.
 //
 
 #include "Span.hpp"
@@ -9,32 +9,31 @@
 
 int main(void) {
     // Basic test from subject
-    std::cout << "=== Basic Test ===" << std::endl;
+    std::cout << "Basic Test..." << std::endl;
     Span sp = Span(5);
+    srand(time(NULL));
 
-    sp.addNumber(6);
-    sp.addNumber(3);
-    sp.addNumber(17);
-    sp.addNumber(9);
-    sp.addNumber(11);
+    for (int i = 0; i < 5; ++i) {
+        sp.addNumber(rand() % 100);
+    }
 
-    std::cout << sp.shortestSpan() << std::endl;
-    std::cout << sp.longestSpan() << std::endl;
+    std::cout << "Shortest span: " << sp.shortestSpan() << std::endl;
+    std::cout << "Longest span: " << sp.longestSpan() << std::endl;
 
     // Test with 10,000 numbers
-    std::cout << "\n=== Large Scale Test (10,000 numbers) ===" << std::endl;
+    std::cout << "\nLarge Scale Test (10,000 numbers)..." << std::endl;
     Span sp2 = Span(10000);
     srand(time(NULL));
 
     for (int i = 0; i < 10000; ++i) {
-        sp2.addNumber(rand() % 1000);
+        sp2.addNumber(rand() % 10000);
     }
 
     std::cout << "Shortest span: " << sp2.shortestSpan() << std::endl;
     std::cout << "Longest span: " << sp2.longestSpan() << std::endl;
 
     // Test with iterator range
-    std::cout << "\n=== Iterator Range Test ===" << std::endl;
+    std::cout << "\nIterator Range Test..." << std::endl;
     std::vector<int> numbers;
     numbers.push_back(1);
     numbers.push_back(2);
@@ -48,7 +47,7 @@ int main(void) {
     std::cout << "Longest span: " << sp3.longestSpan() << std::endl;
 
     // Error handling
-    std::cout << "\n=== Error Handling ===" << std::endl;
+    std::cout << "\nError Handling..." << std::endl;
     Span sp4 = Span(2);
     sp4.addNumber(42);
 
