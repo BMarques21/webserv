@@ -96,7 +96,7 @@ Build a complete containerized infrastructure using **Docker** and **Docker Comp
 
 ---
 
-## 🌐 webserv (w/ avigna & brunmart) – Work in Progress 🚧
+## 🌐 webserv (w/ brunmart) – Work in Progress 🚧
 
 ### Objective
 Develop a **custom HTTP server** in C++, compliant with the HTTP/1.1 specification, capable of handling multiple clients and requests concurrently.
