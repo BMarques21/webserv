@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv - HTTP/1.1 Server</title>
+    <link rel="icon" type="image/png" href="images/7824.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="chatbot.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <img src="images/7824.png" alt="Webserv Logo" class="logo-icon">
+                <div>
+                    <h1>Webserv</h1>
+                    <p>HTTP/1.1 Server in C++ 98</p>
+                </div>
+            </div>
+            <div class="status">
+                <div class="status-dot"></div>
+                <span>Server Online</span>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-content">
+            <button class="nav-btn active" onclick="showTab('overview', event)">Overview</button>
+            <button class="nav-btn" onclick="showTab('architecture', event)">Architecture</button>
+            <button class="nav-btn" onclick="showTab('testing', event)">HTTP Testing</button>
+            <button class="nav-btn" onclick="showTab('upload', event)">File Upload</button>
+            <button class="nav-btn" onclick="showTab('features', event)">Features</button>
+            <button class="nav-btn" onclick="showTab('documentation', event)">Documentation</button>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="card">
+                <h2>Project Overview</h2>
+                <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 2rem;">
+                    Webserv is a fully functional HTTP/1.1 web server implemented from scratch in C++ 98. 
+                    This project demonstrates deep understanding of network programming, HTTP protocol, 
+                    and asynchronous I/O operations using modern multiplexing techniques.
+                </p>
+
+                <div class="grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"></div>
+                        <h3>HTTP/1.1 Protocol</h3>
+                        <p>Full implementation of HTTP/1.1 with GET, POST, and DELETE methods</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"></div>
+                        <h3>Non-Blocking I/O</h3>
+                        <p>Efficient event-driven architecture using poll/select/epoll/kqueue</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon"></div>
+                        <h3>High Performance</h3>
+                        <p>Handles multiple concurrent connections with minimal resource usage</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Key Features</h2>
+                <div class="grid">
+                    <ul class="check-list">
+                        <li>Configuration file parsing</li>
+                        <li>Virtual server support</li>
+                        <li>Static file serving</li>
+                        <li>File upload handling</li>
+                        <li>CGI script execution</li>
+                    </ul>
+                    <ul class="check-list">
+                        <li>Custom error pages</li>
+                        <li>Multiple port listening</li>
+                        <li>Session management</li>
+                        <li>Request timeout handling</li>
+                        <li>Chunked transfer encoding</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Tab -->
+        <div id="architecture" class="tab-content">
+            <div class="card">
+                <h2>System Architecture</h2>
+                
+                <h3 style="margin-top: 2rem;">⚙️ Core Components</h3>
+                
+                <div class="component-card">
+                    <div class="component-title">ConfigParser</div>
+                    <p>Parses NGINX-style configuration files to set up server blocks, routes, and parameters.</p>
+                    <p style="margin-top: 0.5rem;"><span class="code-tag">config/ConfigParser.cpp</span></p>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-title">Server</div>
+                    <p>Main server class managing socket creation, binding, listening, and multiplexing I/O operations.</p>
+                    <p style="margin-top: 0.5rem;"><span class="code-tag">server/Server.cpp</span></p>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-title">RequestHandler</div>
+                    <p>Parses HTTP requests, validates headers, and routes to appropriate handlers (GET/POST/DELETE).</p>
+                    <p style="margin-top: 0.5rem;"><span class="code-tag">http/RequestHandler.cpp</span></p>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-title">ResponseBuilder</div>
+                    <p>Constructs HTTP responses with proper status codes, headers, and body content.</p>
+                    <p style="margin-top: 0.5rem;"><span class="code-tag">http/ResponseBuilder.cpp</span></p>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-title">CGIHandler</div>
+                    <p>Executes CGI scripts (PHP, Python) using fork/execve and manages environment variables.</p>
+                    <p style="margin-top: 0.5rem;"><span class="code-tag">cgi/CGIHandler.cpp</span></p>
+                </div>
+
+                <h3 style="margin-top: 2rem;">Event Loop Flow</h3>
+                <div class="component-card">
+                    <ol style="list-style: decimal; padding-left: 2rem; line-height: 2;">
+                        <li><strong>Initialize:</strong> Create socket, bind to port, set non-blocking, start listening</li>
+                        <li><strong>Poll:</strong> Wait for events on file descriptors (accept, read, write)</li>
+                        <li><strong>Accept:</strong> New connections create client socket descriptors</li>
+                        <li><strong>Read:</strong> Parse HTTP request headers and body</li>
+                        <li><strong>Process:</strong> Route to handler, execute logic, prepare response</li>
+                        <li><strong>Write:</strong> Send HTTP response back to client</li>
+                        <li><strong>Cleanup:</strong> Close connection or keep-alive for next request</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testing Tab -->
+        <div id="testing" class="tab-content">
+            <div class="card">
+                <h2>HTTP Method Testing</h2>
+                
+                <div class="test-section">
+                    <button class="btn btn-primary" onclick="testMethod('GET', '/api/test')">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">GET</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Retrieve Resource</div>
+                    </button>
+                    <button class="btn btn-success" onclick="testMethod('POST', '/api/test')">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">POST</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Create Resource</div>
+                    </button>
+                    <button class="btn btn-danger" onclick="testMethod('DELETE', '/api/test/1')">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">DELETE</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Remove Resource</div>
+                    </button>
+                </div>
+
+                <h3>Custom Request</h3>
+                <div class="input-group">
+                    <select id="methodSelect">
+                        <option>GET</option>
+                        <option>POST</option>
+                        <option>DELETE</option>
+                        <option>PUT</option>
+                        <option>HEAD</option>
+                    </select>
+                    <input type="text" id="urlInput" placeholder="/api/endpoint" value="/api/test">
+                    <button class="btn btn-primary" onclick="testCustomMethod()" style="width: auto; padding: 0.75rem 2rem;">
+                        Send Request
+                    </button>
+                </div>
+
+                <h3>Recent Tests</h3>
+                <div id="testResults">
+                    <div class="no-results">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;"></div>
+                        <p>No tests run yet. Click a button above to start testing!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Tab -->
+        <div id="upload" class="tab-content">
+            <div class="card">
+                <h2>File Upload Testing</h2>
+                
+                <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📤</div>
+                    <p style="font-size: 1.1rem; margin-bottom: 1rem;">Drag and drop or click to select file</p>
+                    <input type="file" id="fileInput" style="display: none;" onchange="handleFileUpload(event)">
+                    <button class="btn btn-primary" style="width: auto; margin: 0 auto; display: inline-block;">
+                        Choose File
+                    </button>
+                    <div id="uploadStatus" style="margin-top: 1rem;"></div>
+                </div>
+
+                <h3 style="margin-top: 2rem;">Upload Implementation Details</h3>
+                <div class="component-card">
+                    <ul class="check-list">
+                        <li><strong>Multipart Form Data:</strong> Proper parsing of multipart/form-data content type</li>
+                        <li><strong>File Size Limits:</strong> Configurable maximum upload size with proper error handling</li>
+                        <li><strong>Non-Blocking I/O:</strong> Chunked reading to prevent blocking on large uploads</li>
+                        <li><strong>Security:</strong> Filename sanitization and path traversal prevention</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Tab -->
+        <div id="features" class="tab-content">
+            <div class="card">
+                <h2>Advanced Features</h2>
+                
+                <div class="grid">
+                    <div class="feature-card">
+                        <div class="feature-icon"></div>
+                        <h3>CGI Support</h3>
+                        <p style="margin-bottom: 1rem;">Execute dynamic scripts in multiple languages:</p>
+                        <ul style="list-style: disc; padding-left: 1.5rem;">
+                            <li>PHP scripts (.php)</li>
+                            <li>Python scripts (.py)</li>
+                            <li>Perl scripts (.pl)</li>
+                            <li>Environment variable passing</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon"></div>
+                        <h3>Session Management</h3>
+                        <p style="margin-bottom: 1rem;">Cookie-based session tracking:</p>
+                        <ul style="list-style: disc; padding-left: 1.5rem;">
+                            <li>Session ID generation</li>
+                            <li>Cookie parsing and setting</li>
+                            <li>Session timeout handling</li>
+                            <li>Secure cookie attributes</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon"></div>
+                        <h3>Multi-Port Support</h3>
+                        <p style="margin-bottom: 1rem;">Serve different content on multiple ports:</p>
+                        <ul style="list-style: disc; padding-left: 1.5rem;">
+                            <li>Virtual server configuration</li>
+                            <li>Port-specific routing</li>
+                            <li>Independent document roots</li>
+                            <li>Different error pages per port</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon"></div>
+                        <h3>Error Handling</h3>
+                        <p style="margin-bottom: 1rem;">Comprehensive error management:</p>
+                        <ul style="list-style: disc; padding-left: 1.5rem;">
+                            <li>Custom error pages (404, 500, etc.)</li>
+                            <li>Graceful connection handling</li>
+                            <li>Request timeout detection</li>
+                            <li>Proper HTTP status codes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Performance Benchmarks</h2>
+                <button class="btn btn-primary" onclick="fetchPerformanceMetrics()" style="width: auto; padding: 0.75rem 2rem; margin-bottom: 1.5rem;">Fetch Live Metrics</button>
+                <div class="grid">
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; font-weight: bold; color: #a855f7; margin-bottom: 0.5rem;" id="metric-connections">10,000+</div>
+                        <p>Concurrent Connections</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; font-weight: bold; color: #22c55e; margin-bottom: 0.5rem;" id="metric-response">&lt;1ms</div>
+                        <p>Average Response Time</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; font-weight: bold; color: #3b82f6; margin-bottom: 0.5rem;" id="metric-uptime">99.9%</div>
+                        <p>Uptime</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentation Tab -->
+        <div id="documentation" class="tab-content">
+            <div class="card">
+                <h2>Configuration Guide</h2>
+                
+                <p style="color: #c084fc; margin-bottom: 0.5rem; font-weight: 500;">Example Configuration File:</p>
+                <pre>server {
+    listen 8080;
+    server_name localhost;
+    root /var/www/html;
+    index index.html;
+    
+    location / {
+        allow_methods GET POST;
+    }
+    
+    location /upload {
+        allow_methods POST;
+        client_max_body_size 10M;
+    }
+    
+    location /cgi-bin {
+        cgi_pass /usr/bin/php-cgi;
+        allow_methods GET POST;
+    }
+    
+    error_page 404 /404.html;
+    error_page 500 /500.html;
+}</pre>
+
+                <h3 style="margin-top: 2rem;">Configuration Directives</h3>
+                
+                <div class="component-card">
+                    <span class="code-tag">listen</span>
+                    <p style="margin-top: 0.5rem;">Specifies the port number the server listens on</p>
+                </div>
+
+                <div class="component-card">
+                    <span class="code-tag">server_name</span>
+                    <p style="margin-top: 0.5rem;">Sets the server name for virtual host matching</p>
+                </div>
+
+                <div class="component-card">
+                    <span class="code-tag">root</span>
+                    <p style="margin-top: 0.5rem;">Defines the document root directory</p>
+                </div>
+
+                <div class="component-card">
+                    <span class="code-tag">location</span>
+                    <p style="margin-top: 0.5rem;">Configures route-specific settings and handlers</p>
+                </div>
+
+                <div class="component-card">
+                    <span class="code-tag">allow_methods</span>
+                    <p style="margin-top: 0.5rem;">Restricts allowed HTTP methods for a location</p>
+                </div>
+
+                <div class="component-card">
+                    <span class="code-tag">client_max_body_size</span>
+                    <p style="margin-top: 0.5rem;">Sets maximum allowed request body size</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Usage Instructions</h2>
+                
+                <h3>1. Compilation</h3>
+                <pre>make</pre>
+
+                <h3>2. Running the Server</h3>
+                <pre>./webserv [config_file]</pre>
+                <p style="margin-top: 0.5rem;">If no config file is specified, uses default configuration</p>
+
+                <h3 style="margin-top: 2rem;">3. Testing with curl</h3>
+                
+                <p style="color: #c084fc; margin-top: 1rem;">GET Request:</p>
+                <pre>curl http://localhost:8080/</pre>
+
+                <p style="color: #c084fc; margin-top: 1rem;">POST Request:</p>
+                <pre>curl -X POST -d "data=test" http://localhost:8080/api</pre>
+
+                <p style="color: #c084fc; margin-top: 1rem;">File Upload:</p>
+                <pre>curl -F "file=@image.jpg" http://localhost:8080/upload</pre>
+            </div>
+
+            <div class="card">
+                <h2>Project Resources</h2>
+                <div class="resources-container">
+                    <!-- Official HTTP Specifications -->
+                    <div class="resource-category">
+                        <div class="resource-header" onclick="toggleResource(this)">
+                            <h3>Official HTTP Specifications</h3>
+                            <span class="toggle-icon">+</span>
+                        </div>
+                        <div class="resource-content">
+                            <div class="resource-item">
+                                <h4>HTTP/1.0 Specification (RFC 1945)</h4>
+                                <p>Foundation of web protocols, simpler than HTTP/1.1. Understanding this helps with HTTP/1.1 implementation.</p>
+                                <a href="https://www.ietf.org/rfc/rfc1945.txt" target="_blank" class="resource-link">Read RFC 1945 →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>HTTP/1.1 Specification (RFC 2616)</h4>
+                                <p>Complete HTTP/1.1 protocol definition. Must-read for headers, status codes, and methods. References for chunked encoding and keep-alive.</p>
+                                <a href="https://www.ietf.org/rfc/rfc2616.txt" target="_blank" class="resource-link">Read RFC 2616 →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>CGI Specification (RFC 3875)</h4>
+                                <p>Official CGI standard. Includes environment variable definitions and request/response handling details.</p>
+                                <a href="https://tools.ietf.org/html/rfc3875" target="_blank" class="resource-link">Read RFC 3875 →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Web Server References -->
+                    <div class="resource-category">
+                        <div class="resource-header" onclick="toggleResource(this)">
+                            <h3>Web Server References</h3>
+                            <span class="toggle-icon">+</span>
+                        </div>
+                        <div class="resource-content">
+                            <div class="resource-item">
+                                <h4>NGINX Documentation</h4>
+                                <p>Configuration directives reference, server behavior comparison, and performance tuning examples.</p>
+                                <a href="https://nginx.org/en/docs/" target="_blank" class="resource-link">Visit NGINX Docs →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>Apache httpd Documentation</h4>
+                                <p>Different approach to web server configuration. Useful for understanding alternative implementations.</p>
+                                <a href="https://httpd.apache.org/docs/" target="_blank" class="resource-link">Visit Apache Docs →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>Microsoft IIS Documentation</h4>
+                                <p>Windows server perspective on web services. Different architecture but similar core concepts.</p>
+                                <a href="https://docs.microsoft.com/en-us/iis/" target="_blank" class="resource-link">Visit IIS Docs →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- C++ 98 Programming Resources -->
+                    <div class="resource-category">
+                        <div class="resource-header" onclick="toggleResource(this)">
+                            <h3>C++ 98 Programming Resources</h3>
+                            <span class="toggle-icon">+</span>
+                        </div>
+                        <div class="resource-content">
+                            <div class="resource-item">
+                                <h4>C++ Standard Library Reference</h4>
+                                <p>C++98 compatible sections. All STL containers and algorithms. String manipulation, vectors, and maps.</p>
+                                <a href="https://en.cppreference.com/" target="_blank" class="resource-link">Visit CPPReference →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>GCC/Clang Documentation</h4>
+                                <p>Compiler-specific features, optimization flags, and debugging information.</p>
+                                <a href="https://gcc.gnu.org/onlinedocs/" target="_blank" class="resource-link">Visit GCC Docs →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>Google C++ Style Guide</h4>
+                                <p>Code organization, naming conventions, and memory management best practices.</p>
+                                <a href="https://google.github.io/styleguide/cppguide.html" target="_blank" class="resource-link">View Style Guide →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Socket Programming & Networking -->
+                    <div class="resource-category">
+                        <div class="resource-header" onclick="toggleResource(this)">
+                            <h3>Socket Programming & Networking</h3>
+                            <span class="toggle-icon">+</span>
+                        </div>
+                        <div class="resource-content">
+                            <div class="resource-item">
+                                <h4>Beej's Guide to Network Programming</h4>
+                                <p>Excellent introduction to sockets. Explains select() and poll() clearly with client/server examples. Very beginner-friendly.</p>
+                                <a href="https://beej.us/guide/bgnet/" target="_blank" class="resource-link">Read Beej's Guide →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>Linux man pages online</h4>
+                                <p>Complete system call reference: socket(), accept(), listen(), read(), write(), poll(), select(), epoll().</p>
+                                <a href="https://man7.org/linux/man-pages/" target="_blank" class="resource-link">Browse man pages →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>poll() Reference</h4>
+                                <p>More efficient than select(). POLLIN/POLLOUT event types. Timeout in milliseconds.</p>
+                                <a href="https://man7.org/linux/man-pages/man2/poll.2.html" target="_blank" class="resource-link">Read poll(2) →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>epoll Reference (Linux)</h4>
+                                <p>Linux-only, highly efficient. epoll_create, epoll_ctl, epoll_wait. Edge-triggered vs level-triggered.</p>
+                                <a href="https://man7.org/linux/man-pages/man7/epoll.7.html" target="_blank" class="resource-link">Read epoll(7) →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>kqueue Reference (BSD/macOS)</h4>
+                                <p>BSD/macOS alternative to epoll. kevent() structures and filters. Performance advantages.</p>
+                                <a href="https://man.freebsd.org/cgi/man.cgi?query=kqueue&sektion=2" target="_blank" class="resource-link">Read kqueue(2) →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Process & System Programming -->
+                    <div class="resource-category">
+                        <div class="resource-header" onclick="toggleResource(this)">
+                            <h3>Process & System Programming</h3>
+                            <span class="toggle-icon">+</span>
+                        </div>
+                        <div class="resource-content">
+                            <div class="resource-item">
+                                <h4>fork() man page</h4>
+                                <p>Process creation basics, return values, and behavior. Critical for CGI implementation.</p>
+                                <a href="https://man7.org/linux/man-pages/man2/fork.2.html" target="_blank" class="resource-link">Read fork(2) →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>execve() man page</h4>
+                                <p>Program execution, argument passing, and environment variables. Used for CGI script execution.</p>
+                                <a href="https://man7.org/linux/man-pages/man2/execve.2.html" target="_blank" class="resource-link">Read execve(2) →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>waitpid() man page</h4>
+                                <p>Reaping zombie processes, status handling (WIFEXITED, WEXITSTATUS), and proper child cleanup.</p>
+                                <a href="https://man7.org/linux/man-pages/man2/waitpid.2.html" target="_blank" class="resource-link">Read waitpid(2) →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>pipe() man page</h4>
+                                <p>Inter-process communication. Read/write end handling. Essential for CGI communication setup.</p>
+                                <a href="https://man7.org/linux/man-pages/man2/pipe.2.html" target="_blank" class="resource-link">Read pipe(2) →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Descriptor Manipulation -->
+                    <div class="resource-category">
+                        <div class="resource-header" onclick="toggleResource(this)">
+                            <h3>File Descriptor & I/O Operations</h3>
+                            <span class="toggle-icon">+</span>
+                        </div>
+                        <div class="resource-content">
+                            <div class="resource-item">
+                                <h4>dup() and dup2() man page</h4>
+                                <p>File descriptor redirection. STDIN/STDOUT/STDERR redirection. Pipe connection to CGI.</p>
+                                <a href="https://man7.org/linux/man-pages/man2/dup.2.html" target="_blank" class="resource-link">Read dup(2) →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>stat() man page</h4>
+                                <p>Check file existence and type, file permissions, and file size information.</p>
+                                <a href="https://man7.org/linux/man-pages/man2/stat.2.html" target="_blank" class="resource-link">Read stat(2) →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>open() man page</h4>
+                                <p>File opening with flags, file creation modes, and non-blocking file operations.</p>
+                                <a href="https://man7.org/linux/man-pages/man2/open.2.html" target="_blank" class="resource-link">Read open(2) →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>opendir()/readdir()/closedir()</h4>
+                                <p>Directory listing, reading directory entries, and directory iteration for file listings.</p>
+                                <a href="https://man7.org/linux/man-pages/man3/opendir.3.html" target="_blank" class="resource-link">Read opendir(3) →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>access() man page</h4>
+                                <p>Check file permissions (read/write/execute) and verify file accessibility.</p>
+                                <a href="https://man7.org/linux/man-pages/man2/access.2.html" target="_blank" class="resource-link">Read access(2) →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Debugging & Testing Tools -->
+                    <div class="resource-category">
+                        <div class="resource-header" onclick="toggleResource(this)">
+                            <h3>Debugging & Testing Tools</h3>
+                            <span class="toggle-icon">+</span>
+                        </div>
+                        <div class="resource-content">
+                            <div class="resource-item">
+                                <h4>gdb - GNU Debugger</h4>
+                                <p>Breakpoints, stepping, variable inspection, and stack trace analysis. Command: <code>gdb ./webserv</code></p>
+                                <a href="https://www.gnu.org/software/gdb/documentation/" target="_blank" class="resource-link">GDB Documentation →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>valgrind - Memory Error Detector</h4>
+                                <p>Detect memory leaks and buffer overflows. Command: <code>valgrind ./webserv</code></p>
+                                <a href="https://valgrind.org/" target="_blank" class="resource-link">Valgrind Documentation →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>strace - System Call Tracer</h4>
+                                <p>See all system calls and debug I/O issues. Command: <code>strace -e trace=network ./webserv</code></p>
+                                <a href="https://strace.io/" target="_blank" class="resource-link">strace Documentation →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>curl - HTTP Testing</h4>
+                                <p>Send custom requests and test all HTTP methods. Check headers: <code>curl -i http://localhost:8080/</code></p>
+                                <a href="https://curl.se/docs/" target="_blank" class="resource-link">curl Documentation →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Load Testing Tools -->
+                    <div class="resource-category">
+                        <div class="resource-header" onclick="toggleResource(this)">
+                            <h3>Load Testing & Performance Tools</h3>
+                            <span class="toggle-icon">+</span>
+                        </div>
+                        <div class="resource-content">
+                            <div class="resource-item">
+                                <h4>Apache Bench (ab)</h4>
+                                <p>Simple concurrent requests testing. Command: <code>ab -n 1000 -c 100 http://localhost:8080/</code></p>
+                                <a href="https://httpd.apache.org/docs/current/programs/ab.html" target="_blank" class="resource-link">ab Documentation →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>wrk - Modern HTTP Load Tester</h4>
+                                <p>Better concurrency modeling with Lua scripting support. Command: <code>wrk -t4 -c100 -d30s http://localhost:8080/</code></p>
+                                <a href="https://github.com/wg/wrk" target="_blank" class="resource-link">wrk Repository →</a>
+                            </div>
+                            <div class="resource-item">
+                                <h4>siege - HTTP Load Testing</h4>
+                                <p>URL specification with variable concurrency. Command: <code>siege -c 100 -r 10 http://localhost:8080/</code></p>
+                                <a href="https://www.joedog.org/siege-home/" target="_blank" class="resource-link">siege Documentation →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p style="margin-bottom: 0.5rem;">Webserv - HTTP/1.1 Server Implementation</p>
+        <p style="font-size: 0.875rem;">Built with C++ 98 | 42 School Project | 2025</p>
+    </footer>
+
+    <!-- Chatbot -->
+    <button class="chatbot-button" onclick="toggleChatbot()">
+        🤖
+        <div class="chatbot-tooltip">How can I help?</div>
+    </button>
+    
+    <div id="chatbot" class="chatbot-window">
+        <div class="chatbot-header">
+            <h3>🤖 Webserv Assistant</h3>
+            <button class="chatbot-close" onclick="toggleChatbot()">×</button>
+        </div>
+        
+        <div class="chatbot-messages" id="chatMessages">
+            <div class="chatbot-message">
+                <div class="chatbot-avatar bot">🤖</div>
+                <div>
+                    <div class="chatbot-bubble">
+                        Hi! I'm here to answer questions about the Webserv project. What would you like to know?
+                    </div>
+                    <div class="chatbot-suggestions">
+                        <button class="chatbot-suggestion" onclick="askQuestion('What is webserv?')">What is webserv?</button>
+                        <button class="chatbot-suggestion" onclick="askQuestion('How does it work?')">How does it work?</button>
+                        <button class="chatbot-suggestion" onclick="askQuestion('What methods are supported?')">Supported methods?</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chatbot-input-area">
+            <input type="text" class="chatbot-input" id="chatInput" placeholder="Ask a question..." onkeydown="if(event.key==='Enter') sendMessage()">
+            <button class="chatbot-send" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script src="chatbot.js"></script>
+</body>
+</html>
