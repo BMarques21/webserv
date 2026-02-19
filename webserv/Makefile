@@ -1,101 +1,70 @@
 ##############################################################################
-#                       webserv by brunmart & viceda-s                       #
+#                       webserv - HTTP/1.1 Server                           #
 ##############################################################################
 
-#─────────────────────────────Compilation Settings───────────────────────────#
+NAME = webserv
+CXX = g++
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -Iincludes
+RM = rm -rf
 
-NAME	= webserv
-CC		= c++
-FLAGS	= -Werror -Wextra -Wall -std=c++98
-O_DIR	= obj/
-RM		= rm -rf
-HEADER	= $(O_DIR)/.header
+# Directories
+SRC_DIR = srcs
+INC_DIR = includes
+OBJ_DIR = objs
 
-all: $(HEADER) $(NAME)
+# Source files - Core server
+SERVER_SRCS = $(SRC_DIR)/main.cpp \
+              $(SRC_DIR)/Server.cpp \
+              $(SRC_DIR)/Client.cpp \
+              $(SRC_DIR)/Config.cpp
 
-#──────────────────────────────Animation Variables───────────────────────────#
+# Source files - HTTP components
+HTTP_SRCS = $(SRC_DIR)/HttpRequest.cpp \
+            $(SRC_DIR)/HttpResponse.cpp \
+            $(SRC_DIR)/StaticFileHandler.cpp \
+            $(SRC_DIR)/UploadHandler.cpp
 
-YELLOW			= \033[38;2;255;248;147m# FFF893
-PINK			= \033[38;2;231;133;190m# E785BE
-GREEN			= \033[38;2;129;223;164m# 81DFA4
-RESET			= \033[0m
+# Combined sources
+SRCS = $(SERVER_SRCS) $(HTTP_SRCS)
 
-BAR_SIZE		= 43
-COMPILED_COUNT	= $(O_DIR)/.compiled_count
+# Object files
+OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-#───────────────────────────Mandatory Compilation────────────────────────────#
+# Colors
+GREEN = \033[0;32m
+CYAN = \033[0;36m
+RESET = \033[0m
 
-# Server directory files (src/server/)
-SERVER_SRC	= main.cpp Server.cpp Client.cpp Request.cpp Response.cpp Config.cpp
-SERVER_SRC	:= $(addprefix src/server/, $(SERVER_SRC))
+# Main target
+all: $(OBJ_DIR) $(NAME)
 
-# Root src directory files (src/)
-ROOT_SRC	= CgiHandler.cpp HttpStatus.cpp Utils.cpp
-ROOT_SRC	:= $(addprefix src/, $(ROOT_SRC))
+# Create object directory
+$(OBJ_DIR):
+	@mkdir -p $(OBJ_DIR)
 
-# Combine all sources
-SRC			= $(SERVER_SRC) $(ROOT_SRC)
-OBJ			= $(SRC:%.cpp=$(O_DIR)/%.o)
-INC			= -I inc/
+# Link executable
+$(NAME): $(OBJS)
+	@$(CXX) $(CXXFLAGS) -o $@ $^
+	@echo "$(GREEN)✓ $(NAME) compiled successfully!$(RESET)"
 
-OBJ_COUNT 	= $(words $(OBJ))
-
-# Compile .cpp to .o
-$(O_DIR)/%.o: %.cpp
+# Compile objects
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
-	@$(CC) $(FLAGS) -c $< -o $@ $(INC);
-	@current=$$(cat $(COMPILED_COUNT) 2>/dev/null || echo 0); \
-	bar_size=$(BAR_SIZE); \
-	next=$$(( $$current + 1 )); \
-	echo $$next > $(COMPILED_COUNT); \
-	if [ $$current -eq 0 ]; then \
-		printf "%-12.12s %-10.10s $(GREEN)" "Compiling" $(NAME);  \
-	fi; \
-	filled=$$(( $$next * $$bar_size / $(OBJ_COUNT) )); \
-	empty=$$(( $$bar_size - $$filled )); \
-	printf "\r%-12.12s %-10.10s $(GREEN)[" "Compiling" $(NAME); \
-	printf "%$${filled}s" | tr ' ' '='; \
-	printf "%$${empty}s" | tr ' ' ' '; \
-	printf "]$(RESET) %3d%%" $$(( $$next * 100 / $(OBJ_COUNT) )); \
-	if [ $$next -eq $(OBJ_COUNT) ]; then \
-		printf "\n"; \
-	fi
-
-# Link .o to executable
-$(NAME): $(OBJ)
-	@$(CC) $(FLAGS) $(OBJ) -o $(NAME)
-	@echo "$(PINK)✓ $(NAME) compiled successfully!$(RESET)"
-
-# Header
-$(HEADER):
-	@mkdir -p $(O_DIR)
-	@touch $@
-	@printf "$(GREEN)"
-	@printf "╔═══════════════════════════════════════════════════════════════════════════════════════════════════════╗\n"
-	@printf "║  ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓███████▓▒░ ░▒▓███████▓▒░▒▓████████▓▒░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░  ║\n"
-	@printf "║  ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░  ║\n"
-	@printf "║  ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒▒▓█▓▒░   ║\n"
-	@printf "║  ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓██████▓▒░ ░▒▓███████▓▒░ ░▒▓██████▓▒░░▒▓██████▓▒░ ░▒▓███████▓▒░ ░▒▓█▓▒▒▓█▓▒░   ║\n"
-	@printf "║  ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▓█▓▒░    ║\n"
-	@printf "║  ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░      ░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▓█▓▒░    ║\n"
-	@printf "║   ░▒▓█████████████▓▒░░▒▓████████▓▒░▒▓███████▓▒░░▒▓███████▓▒░░▒▓████████▓▒░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██▓▒░     ║\n"
-	@printf "║                                                                                                       ║\n"
-	@printf "║                                        𝗯𝘆 𝗯𝗿𝘂𝗻𝗺𝗮𝗿𝘁 & 𝘃𝗶𝗰𝗲𝗱𝗮-𝘀                                         ║\n"
-	@printf "╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝\n"
-	@printf "$(RESET)\n"
-	@touch $(HEADER)
-
-
-#─────────────────────────────────Cleanup────────────────────────────────────#
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+	@echo "$(GREEN)Compiled:$(RESET) $<"
 
 clean:
-	@$(RM) $(O_DIR)
-	@echo "$(PINK)✓ Object files removed$(RESET)"
+	@$(RM) $(OBJ_DIR)
+	@echo "$(CYAN)✓ Object files removed$(RESET)"
 
 fclean: clean
 	@$(RM) $(NAME)
-	@echo "$(PINK)✓ $(NAME) removed$(RESET)"
+	@echo "$(CYAN)✓ $(NAME) removed$(RESET)"
+	@echo "$(CYAN)✓ $(NAME) removed$(RESET)"
 
 re: fclean all
 
-.PHONY: all clean fclean re
+run: $(NAME)
+	@./$(NAME) config/webserv.conf
+
+.PHONY: all clean fclean re run

@@ -1,0 +1,7 @@
+# This directory contains uploaded files
+# Created by the webserver upload handler
+
+*.txt
+*.jpg
+*.png
+*.pdf

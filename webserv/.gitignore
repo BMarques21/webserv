@@ -1,19 +1,10 @@
-# Compiled Object files
+# Build artifacts
+objs/
 *.o
 *.obj
-obj/
-
-# Executables
+*.exe
 webserv
-ircbot
-
-# Logs
-*.log
-server.log
-test.log
-
-# Config backups
-*.conf.bak
+test_http
 
 # IDE files
 .vscode/
@@ -22,14 +13,21 @@ test.log
 *.swo
 *~
 
-# System files
+# OS files
 .DS_Store
 Thumbs.db
 
-# Test outputs
-/tmp/
+# Logs
+*.log
 
-# Core dumps
-core
-core.*
+# Uploads (keep directory structure, ignore content)
+uploads/*
+!uploads/.gitkeep
 
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so

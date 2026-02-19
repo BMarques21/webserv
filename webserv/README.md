@@ -1,201 +1,156 @@
-# Webserv - HTTP/1.1 Server in C++98
+# WebServer - HTTP Components
 
-A lightweight HTTP/1.1 web server implementation in C++98, created as part of the 42 school curriculum.
+C++98 implementation of HTTP request parser, response generator, static file handler, and file upload system for a non-blocking webserver project.
 
-## Features
-
-### Adapted from ft_irc:
-- ✅ **Non-blocking I/O with poll()** - Efficient event-driven architecture
-- ✅ **Socket management** - Setup, binding, listening, accepting connections
-- ✅ **Client management** - Connection tracking with buffers and state
-- ✅ **Output buffering** - Non-blocking write with POLLOUT events
-- ✅ **Timeout handling** - Automatic cleanup of inactive clients
-- ✅ **Makefile structure** - Progress bar, proper flags, clean build system
-
-### HTTP Server Specific:
-- ✅ GET method (fully functional)
-- ✅ Basic error handling (404, 500)
-- ✅ Static file serving
-- ✅ Content-Type detection
-- 🔄 POST, DELETE methods
-- 🔄 Configuration file parsing (basic structure ready)
-- 🔄 CGI execution (framework ready, needs testing)
-- 🔄 File uploads
-- 🔄 Directory listing (autoindex)
-- 🔄 Multiple server blocks
-- 🔄 Virtual hosts support
-- 🔄 Custom error pages (structure ready)
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-webserv/
-├── Makefile                   # Build system with progress bar
-├── README.md                  # This file
-├── .gitignore                 # Git ignore rules
+webserver/
+├── includes/              # Header files
+│   ├── HttpRequest.hpp
+│   ├── HttpResponse.hpp
+│   ├── StaticFileHandler.hpp
+│   └── UploadHandler.hpp
 │
-├── config/
-│   └── webserv.conf          # Server configuration (NGINX-style)
+├── srcs/                  # Source files
+│   ├── HttpRequest.cpp
+│   ├── HttpResponse.cpp
+│   ├── StaticFileHandler.cpp
+│   └── UploadHandler.cpp
 │
-├── inc/                       # Header files
-│   ├── Server.hpp            # Main server class (adapted from ft_irc)
-│   ├── Client.hpp            # Client connection management
-│   ├── Request.hpp           # HTTP request parser
-│   ├── Response.hpp          # HTTP response builder
-│   ├── Config.hpp            # Configuration file parser
-│   ├── CgiHandler.hpp        # CGI script execution
-│   ├── HttpStatus.hpp        # HTTP status codes and messages
-│   └── Utils.hpp             # Utility functions (file I/O, string ops)
+├── tests/                 # Test files
+│   ├── test_http.cpp
+│   ├── test_parser.py
+│   └── test_upload.py
 │
-├── src/                       # Source files
-│   ├── server/               # Core server implementation
-│   │   ├── main.cpp          # Entry point
-│   │   ├── Server.cpp        # Poll loop, socket handling
-│   │   ├── Client.cpp        # Client state management
-│   │   ├── Request.cpp       # HTTP request parsing
-│   │   ├── Response.cpp      # HTTP response building
-│   │   └── Config.cpp        # Configuration parsing
-│   ├── CgiHandler.cpp        # CGI execution (fork/exec/pipes)
-│   ├── HttpStatus.cpp        # Status code mappings
-│   └── Utils.cpp             # Helper functions
+├── docs/                  # Documentation
+│   ├── README.md
+│   ├── QUICK_REFERENCE.md
+│   ├── IMPLEMENTATION_SUMMARY.md
+│   ├── PROJECT_CHECKLIST.md
+│   └── example_integration.cpp
 │
-├── www/                       # Document root
-│   ├── index.html            # Default index page
-│   ├── 404.html              # 404 error page
-│   └── 500.html              # 500 error page
+├── www/                   # Static web files
+│   ├── index.html
+│   ├── upload.html
+│   ├── test.html
+│   ├── style.css
+│   └── script.js
 │
-├── tests/                     # Testing utilities
-│   └── run_tests.sh          # Automated test script
+├── uploads/               # Upload directory
 │
-└── docs/                      # Documentation
-    ├── IMPLEMENTATION_PLAN.md    # Development roadmap
-    └── ADAPTATION_NOTES.md       # ft_irc → webserv notes
+├── Makefile              # Build configuration
+├── build.sh              # Unix build script
+├── build.ps1             # Windows build script
+└── .gitignore            # Git ignore rules
 ```
 
-## Compilation
+## 🚀 Quick Start
 
+### Build
+
+**Linux/Unix:**
 ```bash
 make
+# or
+./build.sh
 ```
 
-## Usage
-
-```bash
-./webserv [config_file]
+**Windows:**
+```powershell
+.\build.ps1
 ```
 
-Default config: `config/webserv.conf`
+### Test
 
-## Testing
-
-### Automated Tests
 ```bash
-# Run all tests
-./tests/run_tests.sh
+./test_http                    # Run unit tests
+python3 tests/test_parser.py   # Test with raw sockets
+python3 tests/test_upload.py   # Test file uploads
+```
+
+## ✨ Features
+
+### HTTP Request Parser
+- ✅ GET, POST, DELETE methods
+- ✅ Header parsing (case-insensitive)
+- ✅ Query string extraction
+- ✅ Request body parsing
+- ✅ Multipart/form-data support
+- ✅ Error validation with proper HTTP codes
+
+### HTTP Response Generator
+- ✅ Correct HTTP status codes
+- ✅ Header management
+- ✅ Default error pages
+- ✅ Helper methods for common responses
+
+### Static File Handler
+- ✅ 25+ MIME types
+- ✅ Directory listing
+- ✅ Default file support
+- ✅ Path security (prevents ../ attacks)
+
+### Upload Handler
+- ✅ Multipart/form-data parsing
+- ✅ Multiple file support
+- ✅ Size validation
+- ✅ Filename sanitization
+
+## 📚 Documentation
+
+See the `docs/` directory for detailed documentation:
+
+- **README.md** - Complete API documentation
+- **QUICK_REFERENCE.md** - Code examples and quick guide
+- **IMPLEMENTATION_SUMMARY.md** - Overview of all components
+- **PROJECT_CHECKLIST.md** - Track your progress
+- **example_integration.cpp** - Integration with poll()-based server
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+./test_http
+```
+
+### HTTP Parser Tests
+```bash
+python3 tests/test_parser.py
+```
+
+### Upload Tests
+```bash
+python3 tests/test_upload.py
 ```
 
 ### Manual Testing
 ```bash
-# Start the server
-./webserv
-
-# In another terminal, test with curl:
-curl http://localhost:8080/
-curl -i http://localhost:8080/nonexistent.html
-
-# Multiple requests stress test
-for i in {1..100}; do curl -s -o /dev/null http://localhost:8080/; done
-
-# Or test with a browser:
-firefox http://localhost:8080/
-
-# Test with telnet (manual HTTP):
+# With telnet
 telnet localhost 8080
-GET / HTTP/1.1
+GET /test.html HTTP/1.1
 Host: localhost
-[press Enter twice]
+[Press Enter twice]
+
+# With curl
+curl http://localhost:8080/test.html
+curl -F "file=@test.txt" http://localhost:8080/upload
 ```
 
-### Expected Results
-- ✅ GET /: HTTP 200 OK with HTML content
-- ✅ GET /nonexistent: HTTP 404 Not Found
-- ✅ Multiple requests: All succeed without crashes
-- ✅ Content-Type: Correct MIME types
-- ✅ Server stability: No crashes or hangs
+## 🔧 Requirements
 
-## Key Adaptations from ft_irc
+- C++ compiler with C++98 support (g++, clang++)
+- Make (optional)
+- Python 3 (for test scripts)
 
-### 1. Poll-based Event Loop
-The core `poll()` loop structure was directly adapted:
-- Monitor multiple file descriptors (server socket + client connections)
-- Handle POLLIN (incoming data) and POLLOUT (ready to write) events
-- Non-blocking operations throughout
+## 📝 License
 
-### 2. Client Buffer Management
-Similar buffering strategy for incomplete requests:
-- Accumulate data in client buffer until complete request received
-- Parse when delimiters found (IRC: `\r\n`, HTTP: `\r\n\r\n` for headers)
-- Handle partial data gracefully
+Educational project - Free to use and modify
 
-### 3. Output Buffering
-Reused the output buffer mechanism:
-- Queue response data in output buffer
-- Set POLLOUT flag when data pending
-- Write when socket ready, handle EAGAIN/EWOULDBLOCK
-- Remove POLLOUT when buffer empty
+## 🤝 Contributing
 
-### 4. Socket Setup
-Standard socket creation, binding, listening code:
-- `SO_REUSEADDR` for quick restarts
-- Non-blocking mode with `fcntl()`
-- Error handling patterns
+This is part of a webserver project. Contributions welcome!
 
-## TODO
+---
 
-### High Priority (Mandatory)
-- [ ] Complete configuration file parsing (NGINX-style)
-- [ ] Implement POST method with body handling
-- [ ] Implement DELETE method
-- [ ] Add file upload functionality
-- [ ] Implement directory listing (autoindex)
-- [ ] Add CGI support with non-blocking I/O
-- [ ] Support multiple server blocks
-- [ ] Implement chunked transfer encoding
-- [ ] Request body size limits (max_body_size)
-
-### Medium Priority (Enhancements)
-- [ ] Custom error pages from configuration
-- [ ] HTTP redirections (301/302)
-- [ ] Keep-alive connection support
-- [ ] Multiple CGI interpreters
-- [ ] Virtual host support
-- [ ] Range requests
-
-### Bonus Features
-- [ ] Cookie and session management
-- [ ] Multiple CGI types with examples
-- [ ] WebSocket support (if time permits)
-
-### Testing & Quality
-- [ ] Stress testing with siege/ab
-- [ ] Memory leak testing with valgrind
-- [ ] Browser compatibility testing
-- [ ] Compare with NGINX behavior
-- [ ] Comprehensive error scenario testing
-
-## Documentation
-
-- **[IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md)** - Detailed development roadmap with phases
-- **[ADAPTATION_NOTES.md](docs/ADAPTATION_NOTES.md)** - Technical details on ft_irc adaptations
-- **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide for immediate use
-
-## Compliance
-
-- **C++ 98 standard**
-- **Allowed functions**: execve, dup, dup2, pipe, fork, socketpair, htons, htonl, ntohs, ntohl, select, poll, epoll, kqueue, socket, accept, listen, send, recv, bind, connect, getaddrinfo, freeaddrinfo, setsockopt, getsockname, getprotobyname, fcntl, close, read, write, waitpid, kill, signal, access, stat, open, opendir, readdir, closedir
-- **No external libraries** (except standard C++98)
-
-## Authors
-
-viceda-s
-
+For detailed documentation, see `docs/README.md`
