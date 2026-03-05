@@ -45,10 +45,10 @@ private:
 
 public:
     HttpRequest();
-    
+
     // Main parsing method - returns true if request is complete
     bool parse(const char* data, size_t len);
-    
+
     // Getters
     HttpMethod getMethod() const { return method; }
     std::string getMethodString() const;
@@ -62,13 +62,14 @@ public:
     int getErrorCode() const { return error_code; }
     size_t getContentLength() const { return content_length; }
     const std::string& getBoundary() const { return boundary; }
-    
+
     // Validation
     bool isValid() const { return state != ERROR; }
     bool isComplete() const { return state == COMPLETE; }
-    
+
     // Reset for reuse
     void reset();
 };
 
 #endif
+

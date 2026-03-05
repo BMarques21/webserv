@@ -59,3 +59,4 @@ private:
 };
 
 #endif // CONFIG_HPP
+

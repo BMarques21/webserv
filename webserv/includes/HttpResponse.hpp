@@ -11,27 +11,27 @@ private:
     std::map<std::string, std::string> headers;
     std::string body;
     bool headers_sent;
-    
+
     std::string getStatusMessage(int code) const;
     static std::string loadErrorPage(const std::string& error_code);
-    
+
 public:
     HttpResponse();
     HttpResponse(int code);
-    
+
     // Setters
     void setStatusCode(int code);
     void setHeader(const std::string& key, const std::string& value);
     void setBody(const std::string& content);
     void setContentType(const std::string& mime_type);
-    
+
     // Getters
     int getStatusCode() const { return status_code; }
     const std::string& getBody() const { return body; }
-    
+
     // Build the complete HTTP response
     std::string build();
-    
+
     // Common response builders
     static HttpResponse ok(const std::string& content, const std::string& content_type = "text/html");
     static HttpResponse created(const std::string& location = "");
@@ -46,3 +46,4 @@ public:
 };
 
 #endif
+
