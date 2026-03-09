@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+import os, sys
+sys.stdout.write("Content-Type: text/plain\r\n\r\n")
+sys.stdout.write(os.getcwd())
+sys.stdout.flush()

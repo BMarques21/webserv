@@ -1,0 +1,29 @@
+# Dockerfile.webserv
+# Builds and runs your webserv binary.
+# Used as the "webserv" service in docker-compose.siege.yml.
+#
+# Standalone usage:
+#   docker build -f Dockerfile.webserv -t webserv .
+#   docker run --rm -p 8080:8080 -p 8081:8081 webserv
+
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        make \
+        g++ \
+        python3 \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /webserv
+COPY . .
+
+RUN make 2>&1 | tee /tmp/build.log && \
+    echo "Build OK" || (cat /tmp/build.log && exit 1)
+
+RUN mkdir -p www/upload www/cgi-bin
+
+EXPOSE 8080 8081
+
+CMD ["./webserv", "config/webserv.conf"]
