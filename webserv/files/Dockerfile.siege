@@ -1,0 +1,71 @@
+# Dockerfile.siege — Option B: all-in-one build + test runner
+#
+# Usage:
+#   docker build -f Dockerfile.siege -t webserv-siege .
+#   docker run --rm webserv-siege
+#   docker run --rm webserv-siege --no-valgrind
+#   docker run --rm webserv-siege --no-siege --no-valgrind
+
+FROM debian:bookworm-slim
+
+# ── System deps ───────────────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential make g++ \
+        curl netcat-openbsd \
+        siege python3 valgrind \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /webserv
+
+# ── Copy source files (always committed to git) ───────────────────────────────
+COPY Makefile ./
+COPY srcs/ srcs/
+COPY config/ config/
+
+# ── Copy www/ if it exists — use a glob so Docker doesn't fail if absent ──────
+# The trailing slash on the destination ensures it's treated as a directory.
+# We copy to a temp name first so we can mkdir safely.
+COPY . .
+
+# After the full COPY, reconstruct the minimal www/ structure that the server
+# needs even if www/ was gitignored and arrived empty or missing.
+RUN mkdir -p www/upload www/cgi-bin www/new www/errors && \
+    # Create a minimal index.html if none was copied from the repo
+    if [ ! -f www/index.html ]; then \
+      echo '<!DOCTYPE html><html><head><title>webserv</title></head><body><h1>webserv</h1><p>Running inside Docker.</p></body></html>' \
+        > www/index.html && \
+      echo "  [Dockerfile] Created placeholder www/index.html"; \
+    fi && \
+    # Create minimal error pages if absent
+    if [ ! -f www/errors/404.html ]; then \
+      echo '<!DOCTYPE html><html><body><h1>404 Not Found</h1></body></html>' \
+        > www/errors/404.html; \
+    fi && \
+    if [ ! -f www/errors/500.html ]; then \
+      echo '<!DOCTYPE html><html><body><h1>500 Internal Server Error</h1></body></html>' \
+        > www/errors/500.html; \
+    fi
+
+# ── Build ─────────────────────────────────────────────────────────────────────
+RUN make 2>&1 | tee /tmp/build.log \
+    && echo "Build OK" >> /tmp/build.log \
+    || (echo "Build FAILED" >> /tmp/build.log && cat /tmp/build.log && exit 1)
+
+# ── Smoke test: server must start and accept a connection ─────────────────────
+RUN ./webserv config/webserv.conf >/tmp/smoke.log 2>&1 & \
+    SRV_PID=$! && \
+    for i in $(seq 1 16); do \
+      sleep 0.5 && \
+      nc -z 127.0.0.1 8080 2>/dev/null && break || true; \
+    done && \
+    nc -z 127.0.0.1 8080 2>/dev/null \
+      && echo "=== Smoke test OK ===" \
+      || (echo "=== SMOKE TEST FAILED ===" && cat /tmp/smoke.log && kill $SRV_PID 2>/dev/null && exit 1) && \
+    kill $SRV_PID 2>/dev/null && sleep 0.5
+
+RUN chmod +x run_tests.sh
+
+# ── Entry point ───────────────────────────────────────────────────────────────
+ENTRYPOINT ["bash", "run_tests.sh"]
+CMD []

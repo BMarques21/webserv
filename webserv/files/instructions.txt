@@ -1,0 +1,8 @@
+One command (recommended):
+docker compose -f docker-compose.siege.yml up --build
+
+All-in-one (server + tests in a single container):
+docker build -f Dockerfile.siege -t webserv-siege .
+docker run --rm webserv-siege
+# Skip valgrind for speed:
+docker run --rm webserv-siege --no-valgrind

@@ -1,0 +1,47 @@
+# docker-compose.siege.yml
+#
+# Two-container setup:
+#   webserv  – runs your compiled HTTP server
+#   tester   – runs siege + the full test suite against it
+#
+# Usage:
+#   docker compose -f docker-compose.siege.yml up --build
+#
+# Tip: add "--no-valgrind" or "--no-siege" to the tester command to skip those.
+
+services:
+
+  # ── 1. Your HTTP server ────────────────────────────────────────────────────
+  webserv:
+    build:
+      context: .
+      dockerfile: Dockerfile.webserv
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      # Live-mount www/ so uploaded files are visible from the host too
+      - ./www:/webserv/www
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:8080/"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+
+  # ── 2. Test runner (siege + full suite) ───────────────────────────────────
+  tester:
+    build:
+      context: .
+      dockerfile: Dockerfile.siege
+    # Override the base URL so it hits the webserv container by name
+    environment:
+      - WEBSERV_HOST=webserv
+      - WEBSERV_PORT=8080
+    depends_on:
+      webserv:
+        condition: service_healthy
+    # Pass extra flags here, e.g.: command: ["--no-valgrind"]
+    command: []
+    # Keep the tester alive long enough to see results then exit
+    restart: "no"
